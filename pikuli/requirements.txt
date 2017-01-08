@@ -1,0 +1,4 @@
+psutil
+pypiwin32
+numpy
+comtypes
