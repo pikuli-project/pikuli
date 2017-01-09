@@ -246,6 +246,7 @@ class _GenericMouse(Mouse):
         self.drag_to(x_from, y_from, x_to, y_to)
         self.drop()
 
+
 if Platform.is_(Platform.os_mac):
     @implementation_for(Platform.os_mac)
     class MacMouse(_GenericMouse):
