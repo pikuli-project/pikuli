@@ -1,134 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from platform_configurator import Platform
-
-if not Platform.is_(Platform.os_ubuntu):
-    import numpy as np
-
-from abc import ABCMeta, abstractmethod
-from platform_configurator import platform_dependent, \
-    implementation_for, Platform
-from common_exceptions import FailExit
-from logger import PikuliLogger
-from PIL import Image
+import win32con
+import win32api
+import win32gui
+import win32ui
+import numpy as np
+from PIL import Image, ImageGrab
 from Settings import settings
+from logger import PikuliLogger
+from common_exceptions import FailExit
 
 logger = PikuliLogger('pikuli.Display ').logger
 
-if Platform.is_(Platform.os_mac):
-    import AppKit
-    from Quartz import CoreGraphics as CG
 
-if Platform.is_(Platform.os_win):
-    from PIL import ImageGrab
-    import win32con
-    import win32api
-    import win32gui
-    import win32ui
-
-
-@platform_dependent
-class IDisplay(object):
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def take_screenshot(self, x, y, w, h, hwnd=None):
-        """
-        Args:
-            x:
-            y:
-            w:
-            h:
-            hwnd:
-
-        Returns:
-
-        """
-
-    @abstractmethod
-    def get_monitor_info(self, n):
-        """
-        Args:
-            n:
-
-        Returns:
-
-        """
-
-    @abstractmethod
-    def _monitor_hndl_to_screen_n(self, m_hndl):
-        """
-
-        Args:
-            m_hndl:
-
-        Returns:
-
-        """
-
-
-class _GenericDisplay(IDisplay):
+class Display(object):
     DELAY_KBD_KEY_PRESS = 0.020
     DELAY_BETWEEN_ATTEMTS = 0.5
-
-
-@implementation_for(Platform.os_mac)
-class MacDisplay(_GenericDisplay):
-
-    def _monitor_hndl_to_screen_n(self, m_hndl):
-        raise NotImplementedError
-
-    def get_monitor_info(self, n):
-        monitors = AppKit.NSScreen.screens()
-        if n == 0:
-            raise NotImplementedError
-        elif n <= len(monitors):
-            monitor = monitors[n - 1]
-            sf = monitor.backingScaleFactor()
-            return (monitor.deviceDescription()['NSScreenNumber'], None,
-                    (int(monitor.frame().origin.x),
-                     int(monitor.frame().origin.y),
-                     int(monitor.frame().size.width * sf + monitor.frame().origin.x),
-                     int(monitor.frame().size.height * sf + monitor.frame().origin.y)),
-                    sf)
-        else:
-            raise FailExit('Pikuli.helpers.MacDisplay.get_monitor_info(): wrong monitor number specified: {}'.format(n))
-
-    def take_screenshot(self, x, y, w, h, hwnd=None):
-        """
-        get area screenshot
-        Args:
-            x, y: top-left corner of a rectangle
-            w, h: rectangle dimensions
-            hwnd: for compatibility
-
-        Returns: numpy array
-
-        http://stackoverflow.com/questions/37359192/cannot-figure-out-numpy-equivalent-for-cv-mat-step0
-        """
-        [x, y, w, h] = map(int, [x, y, w, h])
-        driver_cache_size = 64  # bytes
-
-        # align width to the nearest value that divisible by driver_cache_size
-        if w % driver_cache_size != 0:
-            w = driver_cache_size * (int(w / driver_cache_size) + 1)
-
-        image_ref = CG.CGWindowListCreateImage(CG.CGRectMake(x, y, w, h),  # CG.CGRectInfinite,
-                                               CG.kCGWindowListOptionOnScreenOnly,
-                                               CG.kCGNullWindowID,
-                                               CG.kCGWindowImageDefault)
-        pixeldata = CG.CGDataProviderCopyData(CG.CGImageGetDataProvider(image_ref))
-
-        height = CG.CGImageGetHeight(image_ref)
-        width = CG.CGImageGetWidth(image_ref)
-
-        image = Image.frombuffer("RGBA", (width, height),
-                                 pixeldata, "raw", "RGBA", 0, 1).convert('RGB')
-        return np.array(image)
-
-
-@implementation_for(Platform.os_win)
-class WinDisplay(_GenericDisplay):
 
     def _monitor_hndl_to_screen_n(self, m_hndl):
         """

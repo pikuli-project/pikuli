@@ -4,8 +4,17 @@
    Screen - representation of physical computer monitors
 """
 
+import platform
 from common_exceptions import FailExit
-from display import IDisplay
+
+current_platform = platform.system()
+
+if current_platform == 'Darwin':
+    from display_mac import Display
+elif current_platform == 'Windows':
+    from display_win import Display
+else:
+    raise NotImplementedError
 
 
 class Screen(object):
@@ -13,7 +22,7 @@ class Screen(object):
         if isinstance(n, int) and n >= 0:
             # Returns a sequence of tuples. For each monitor found, returns a handle to the monitor,
             # device context handle, and intersection rectangle: (hMonitor, hdcMonitor, PyRECT)
-            (mon_hndl, _, mon_rect, _) = IDisplay().get_monitor_info(n)
+            (mon_hndl, _, mon_rect, _) = Display().get_monitor_info(n)
 
             self.area = (mon_rect[0],
                          mon_rect[1],
