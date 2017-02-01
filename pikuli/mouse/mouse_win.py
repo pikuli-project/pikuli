@@ -3,6 +3,7 @@ import win32con
 import win32api
 from .generic_mouse import *
 
+
 class MouseWin(GenericMouse):
     def __init__(self):
         self._is_mouse_down = False

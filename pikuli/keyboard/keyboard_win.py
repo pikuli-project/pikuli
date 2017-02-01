@@ -4,8 +4,6 @@ import time
 from pikuli.common_exceptions import FailExit
 import win32con
 import win32api
-from key_codes_win import KeyCodes
-
 
 DELAY_KBD_KEY_PRESS = 0.050
 DELAY_BETWEEN_CLICK_AND_TYPE = 0.3

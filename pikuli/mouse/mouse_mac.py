@@ -3,6 +3,7 @@ from Quartz import CoreGraphics as CG
 from AppKit import NSEvent
 from .generic_mouse import *
 
+
 class MouseMac(GenericMouse):
     def __init__(self):
         self._is_mouse_down = False
