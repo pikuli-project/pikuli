@@ -5,12 +5,9 @@
 """
 
 import os
-from platform_configurator import Platform
 from Settings import settings
 from common_exceptions import FailExit
-
-if not Platform.is_(Platform.os_ubuntu):
-    import cv2
+import cv2
 
 
 class Pattern(object):
