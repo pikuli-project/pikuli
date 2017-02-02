@@ -1,120 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import time
-from abc import ABCMeta, abstractmethod
-from platform_configurator import platform_dependent, \
-    implementation_for, Platform
-from common_exceptions import FailExit
-
-if Platform.is_(Platform.os_mac):
-    from Quartz import CoreGraphics as CG
-    from key_codes_mac import KeyCodes
-
-if Platform.is_(Platform.os_win):
-    import win32con
-    import win32api
-    from key_codes_win import KeyCodes
-
+from pikuli.common_exceptions import FailExit
+import win32con
+import win32api
 
 DELAY_KBD_KEY_PRESS = 0.050
 DELAY_BETWEEN_CLICK_AND_TYPE = 0.3
 
 
-@platform_dependent
-class Keyboard(object):
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def press_key(self, char, scancode):
-        """
-        Args:
-            char:
-            scancode:
-
-        Returns:
-
-        """
-
-    @abstractmethod
-    def release_key(self, char, scancode):
-        """
-        Args:
-            char:
-            scancode:
-
-        Returns:
-
-        """
-
-    @abstractmethod
-    def type_char(self, char):
-        """
-        Args:
-            char:
-
-        Returns:
-
-        """
-
-    @abstractmethod
-    def type_text(self, string, modifiers=None):
-        """
-        Args:
-            string:
-            modifiers:
-
-        Returns:
-
-        """
-
-
-@implementation_for(Platform.os_mac)
-class MacKeyboard(Keyboard):
-    def __init__(self):
-        self.keys = KeyCodes()
-
-    def press_key(self, key_code, scancode):
-        CG.CGEventPost(
-            CG.kCGHIDEventTap,
-            CG.CGEventCreateKeyboardEvent(None, key_code, True))
-
-    def release_key(self, key_code, scancode):
-        CG.CGEventPost(
-            CG.kCGHIDEventTap,
-            CG.CGEventCreateKeyboardEvent(None, key_code, False))
-
-    def type_char(self, char):
-        self.press_key(self.keys.get_code(char), 0)
-        self.release_key(self.keys.get_code(char), 0)
-        time.sleep(DELAY_KBD_KEY_PRESS)
-
-    def type_text(self, string, modifiers=None):
-        string = str(string)
-
-        if modifiers is not None:
-            if not isinstance(modifiers, basestring):
-                raise FailExit('incorrect modifiers = "{}"'.format(modifiers))
-            self.press_key(self.keys.get_code(modifiers), 0)
-            time.sleep(DELAY_KBD_KEY_PRESS)
-
-        for char in string:
-            if char.lower() == char:
-                self.type_char(char)
-            else:
-                if modifiers is None:
-                    self.press_key(self.keys.get_code('SHIFT'), 0)
-                    time.sleep(DELAY_KBD_KEY_PRESS)
-                self.type_char(char)
-                if modifiers is None:
-                    self.release_key(self.keys.get_code('SHIFT'), 0)
-                    time.sleep(DELAY_KBD_KEY_PRESS)
-
-        if modifiers is not None:
-            self.release_key(self.keys.get_code(modifiers), 0)
-
-
-@implementation_for(Platform.os_win)
-class WinKeyboard(Keyboard):
+class KeyboardWin(object):
     def __init__(self):
         self.key_codes = {
             """

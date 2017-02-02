@@ -5,16 +5,22 @@
    BaseRegion don't have any information in visual content on screen.
    Content can be defined using .find() or .findAll() methods, implemented in the descendant class
 """
-from platform_configurator import Platform
 
-if not Platform.is_(Platform.os_ubuntu):
-    import cv2
-    import numpy as np
-
+import cv2
+import numpy as np
+import platform
 from Location import Location
-from common_exceptions import FailExit, FindFailed
-from display import IDisplay
 from logger import PikuliLogger
+from common_exceptions import FailExit, FindFailed
+
+current_platform = platform.system()
+
+if current_platform == 'Darwin':
+    from display_mac import Display
+elif current_platform == 'Windows':
+    from display_win import Display
+else:
+    raise NotImplementedError
 
 DELAY_BETWEEN_CV_ATTEMPT = 1.0  # delay between attempts of recognition
 DEFAULT_FIND_TIMEOUT = 3.1
@@ -42,7 +48,7 @@ class BaseRegion(object):
                            if don't pass to constructor a DEFAULT_FIND_TIMEOUT will use.
         """
 
-        self.display = IDisplay()
+        self.display = Display()
         self.scaling_factor = self.display.get_monitor_info(1)[-1]
         self.drag_location = None
         self.relations = ['top-left', 'center']
